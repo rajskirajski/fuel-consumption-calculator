@@ -1,0 +1,67 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-central-1
+  AWS_ACCOUNT_ID: "207909166461"
+  AWS_ROLE_ARN: arn:aws:iam::207909166461:role/fuel-consumption-calculator-github-actions-role
+  ECR_REPOSITORY: fuel-consumption-calculator
+  LAMBDA_FUNCTION_NAME: fuel-consumption-calculator
+
+jobs:
+  build-push-deploy:
+    name: Build, push and deploy Lambda
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Define image variables
+        run: |
+          echo "IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${GITHUB_SHA}" >> "$GITHUB_ENV"
+          echo "IMAGE_URI_LATEST=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:latest" >> "$GITHUB_ENV"
+
+      - name: Build Docker image
+        run: |
+          docker build             -t "$IMAGE_URI"             -t "$IMAGE_URI_LATEST"             .
+
+      - name: Push Docker image
+        run: |
+          docker push "$IMAGE_URI"
+          docker push "$IMAGE_URI_LATEST"
+
+      - name: Update Lambda function code
+        run: |
+          aws lambda update-function-code             --function-name "$LAMBDA_FUNCTION_NAME"             --image-uri "$IMAGE_URI"
+
+      - name: Wait for Lambda update
+        run: |
+          aws lambda wait function-updated             --function-name "$LAMBDA_FUNCTION_NAME"
+
+      - name: Smoke test API
+        run: |
+          API_ENDPOINT=$(aws apigatewayv2 get-apis             --query "Items[?Name=='fuel-consumption-calculator-api'].ApiEndpoint | [0]"             --output text)
+
+          echo "API endpoint: $API_ENDPOINT"
+
+          curl --fail --show-error --silent "$API_ENDPOINT/health"
+          echo
