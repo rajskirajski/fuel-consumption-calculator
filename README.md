@@ -2,52 +2,78 @@
 
 ![CI](https://github.com/rajskirajski/fuel-consumption-calculator/actions/workflows/ci.yml/badge.svg)
 ![CD](https://github.com/rajskirajski/fuel-consumption-calculator/actions/workflows/cd.yml/badge.svg)
+![Terraform](https://github.com/rajskirajski/fuel-consumption-calculator/actions/workflows/terraform.yml/badge.svg)
 
-A simple FastAPI application deployed to AWS as a Lambda container image.  
-The project demonstrates a practical CI/CD pipeline with Docker, Terraform, GitHub Actions and AWS OIDC authentication.
+A complete DevOps portfolio project: a Python FastAPI application deployed to AWS Lambda as a container image, with infrastructure managed by Terraform and CI/CD handled by GitHub Actions.
+
+The application calculates vehicle fuel consumption and optional trip fuel cost.
+
+---
+
+## Project goals
+
+This repository demonstrates:
+
+- containerized Python API development,
+- Infrastructure as Code with Terraform,
+- AWS Lambda deployment using container images,
+- CI/CD automation with GitHub Actions,
+- secure AWS authentication with GitHub OIDC,
+- smoke testing after deployment,
+- clean bootstrap and cleanup procedures.
+
+---
 
 ## Architecture
 
 ```mermaid
 flowchart TD
     Dev[Developer] --> GitHub[GitHub Repository]
-    GitHub --> Actions[GitHub Actions]
-    Actions --> OIDC[GitHub OIDC]
+    GitHub --> CI[CI Workflow]
+    CI --> Tests[Pytest / Ruff / Black]
+    GitHub --> CD[CD Workflow]
+    CD --> OIDC[GitHub OIDC]
     OIDC --> IAM[AWS IAM Role]
-    Actions --> ECR[Amazon ECR]
+    IAM --> ECR[Amazon ECR]
     ECR --> Lambda[AWS Lambda Container Image]
     Lambda --> APIGW[API Gateway HTTP API]
     Lambda --> Logs[CloudWatch Logs]
     User[User] --> APIGW
 ```
 
-## Stack
+---
 
-- Python 3.12
-- FastAPI
-- Mangum
-- Docker
-- AWS Lambda Container Image
-- Amazon ECR
-- API Gateway HTTP API
-- CloudWatch Logs
-- Terraform
-- GitHub Actions
-- GitHub OIDC
+## Tech stack
+
+| Area | Technology |
+| --- | --- |
+| Application | Python 3.12, FastAPI |
+| Lambda adapter | Mangum |
+| Container | Docker |
+| Registry | Amazon ECR |
+| Compute | AWS Lambda Container Image |
+| API | API Gateway HTTP API |
+| Logs | CloudWatch Logs |
+| IaC | Terraform |
+| CI/CD | GitHub Actions |
+| Auth | GitHub OIDC to AWS IAM |
+
+---
 
 ## API endpoints
 
 | Method | Path | Description |
 | --- | --- | --- |
 | GET | `/health` | Health check |
-| GET | `/version` | App version |
+| GET | `/version` | Application version |
 | POST | `/kalkulatorspalania` | Fuel consumption calculator |
 | GET | `/docs` | Swagger UI |
+| GET | `/openapi.json` | OpenAPI schema |
 
 Example request:
 
 ```bash
-curl -X POST http://localhost:8000/kalkulatorspalania \
+curl -X POST "$API_ENDPOINT/kalkulatorspalania" \
   -H "Content-Type: application/json" \
   -d '{"distance_km":500,"fuel_used_liters":40,"fuel_price":6.5}'
 ```
@@ -61,13 +87,17 @@ Example response:
 }
 ```
 
+---
+
 ## Local development
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
-make install-dev
-make run
+pip install --upgrade pip
+pip install -r requirements.txt -r requirements-dev.txt
+pytest -q
+uvicorn app.main:app --reload
 ```
 
 Swagger UI:
@@ -76,45 +106,19 @@ Swagger UI:
 http://127.0.0.1:8000/docs
 ```
 
-## Tests and lint
+---
 
-```bash
-make test
-make lint
-```
+## Deployment overview
 
-## Docker Lambda local run
+Deployment is split into a safe bootstrap flow because AWS Lambda requires the container image to exist in ECR before the Lambda function can be created.
 
-```bash
-make docker-build
-make docker-run
-```
-
-In another terminal:
-
-```bash
-make lambda-health
-```
-
-## AWS deployment
-
-### 1. Configure AWS CLI
-
-```bash
-aws configure
-```
-
-Use:
+Full guide:
 
 ```text
-Region: eu-central-1
-Account: 207909166461
+docs/bootstrap.md
 ```
 
-### 2. Bootstrap Terraform
-
-Lambda container images require an image to already exist in ECR.  
-Therefore deployment is intentionally split into a safe bootstrap flow.
+Short version:
 
 ```bash
 cd terraform
@@ -123,81 +127,142 @@ terraform init
 terraform apply
 ```
 
-This creates:
-
-- ECR
-- GitHub OIDC provider
-- IAM roles and policies
-
-### 3. Push bootstrap image
-
-From repository root:
+Then push bootstrap image:
 
 ```bash
+cd ..
 chmod +x scripts/bootstrap-image.sh
 ./scripts/bootstrap-image.sh
 ```
 
-### 4. Enable Lambda and API Gateway
-
-Edit:
-
-```text
-terraform/terraform.tfvars
-```
-
-Set:
+Enable application stack:
 
 ```hcl
 enable_app_stack = true
 image_tag = "bootstrap"
 ```
 
-Then:
+Apply again:
 
 ```bash
 cd terraform
 terraform apply
 ```
 
-Terraform will output:
+After this, GitHub Actions CD can deploy every push to `main`.
+
+---
+
+## CI/CD
+
+### CI workflow
+
+Runs on pull requests and pushes to `main`.
+
+Checks:
+
+- Ruff
+- Black
+- Pytest
+
+### Terraform workflow
+
+Checks:
+
+- `terraform fmt -check -recursive`
+- `terraform init -backend=false`
+- `terraform validate`
+
+### CD workflow
+
+Runs on push to `main`.
+
+Steps:
+
+1. Authenticate to AWS with GitHub OIDC.
+2. Build Lambda-compatible Docker image.
+3. Push image to ECR with commit SHA and `latest`.
+4. Update Lambda function.
+5. Run smoke test on `/health`.
+
+---
+
+## Screenshots
+
+Add your screenshots here after deployment:
+
+| Screenshot | Path |
+| --- | --- |
+| Green GitHub Actions CI/CD/Terraform | `docs/images/github-actions-success.png` |
+| AWS Lambda function | `docs/images/aws-lambda.png` |
+| API Gateway endpoint | `docs/images/api-gateway.png` |
+| Swagger UI from AWS URL | `docs/images/swagger-aws.png` |
+| CloudWatch logs | `docs/images/cloudwatch-logs.png` |
+
+See:
 
 ```text
-api_endpoint
-github_actions_role_arn
+docs/screenshots.md
 ```
 
-### 5. Push to GitHub
+---
+
+## Estimated AWS costs
+
+This project is designed to stay very cheap for learning and portfolio use.
+
+Typical resources:
+
+- AWS Lambda
+- API Gateway HTTP API
+- ECR storage
+- CloudWatch Logs
+
+For very low traffic, the monthly cost should usually be close to zero or a few PLN/EUR, depending on usage and log retention.
+
+More details:
+
+```text
+docs/costs.md
+```
+
+---
+
+## Cleanup
+
+To remove AWS resources:
 
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin git@github.com:rajskirajski/fuel-consumption-calculator.git
-git push -u origin main
+cd terraform
+terraform destroy
 ```
 
-After this, GitHub Actions CD will:
+Optional local cleanup:
 
-1. Build Docker image.
-2. Push it to ECR with `latest` and commit SHA tags.
-3. Update Lambda.
-4. Run smoke test on `/health`.
+```bash
+chmod +x scripts/cleanup-local.sh
+./scripts/cleanup-local.sh
+```
 
-## Repository configuration
-
-No static AWS access keys are needed.
-
-GitHub Actions uses:
+More details:
 
 ```text
-arn:aws:iam::207909166461:role/fuel-consumption-calculator-github-actions-role
+docs/cleanup.md
 ```
 
-via OIDC.
+---
 
-## Important note about Terraform state
+## Security notes
 
-This project uses local Terraform state by default for simplicity.  
-For team/production use, migrate state to S3 + DynamoDB locking.
+- No long-lived AWS keys are stored in GitHub.
+- GitHub Actions authenticate to AWS using OIDC.
+- IAM role trust policy is limited to this repository and branch.
+- Lambda permissions are scoped to API Gateway integration.
+
+---
+
+## Repository
+
+```text
+https://github.com/rajskirajski/fuel-consumption-calculator
+```
