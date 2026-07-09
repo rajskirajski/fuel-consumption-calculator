@@ -4,7 +4,6 @@ from fastapi.testclient import TestClient
 from app.calculator import calculate_consumption, calculate_cost
 from app.main import app
 
-
 client = TestClient(app)
 
 

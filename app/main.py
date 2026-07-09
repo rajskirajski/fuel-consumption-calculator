@@ -5,7 +5,6 @@ from app.calculator import calculate_consumption, calculate_cost
 from app.config import settings
 from app.schemas import FuelCalculationRequest, FuelCalculationResponse
 
-
 app = FastAPI(
     title=settings.app_name,
     version=settings.version,
