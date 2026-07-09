@@ -1,0 +1,15 @@
+project_name      = "fuel-consumption-calculator"
+aws_region        = "eu-central-1"
+aws_account_id    = "207909166461"
+github_owner      = "rajskirajski"
+github_repository = "fuel-consumption-calculator"
+
+# First apply:
+# enable_app_stack = false
+#
+# After pushing bootstrap image:
+# enable_app_stack = true
+
+enable_app_stack = true
+
+image_tag = "bootstrap"

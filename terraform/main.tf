@@ -66,9 +66,9 @@ module "apigateway" {
 
   count = var.enable_app_stack ? 1 : 0
 
-  project_name        = var.project_name
-  lambda_function_arn = module.lambda[0].function_arn
+  project_name         = var.project_name
+  lambda_function_arn  = module.lambda[0].function_arn
   lambda_function_name = module.lambda[0].function_name
-  lambda_invoke_arn   = module.lambda[0].invoke_arn
-  tags                = local.common_tags
+  lambda_invoke_arn    = module.lambda[0].invoke_arn
+  tags                 = local.common_tags
 }

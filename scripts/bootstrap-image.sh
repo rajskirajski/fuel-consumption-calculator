@@ -12,8 +12,15 @@ echo "Logging in to ECR..."
 aws ecr get-login-password --region "${AWS_REGION}" \
   | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
-echo "Building image: ${IMAGE_URI}"
-docker build -t "${IMAGE_URI}" .
+echo "Building Lambda-compatible image: ${IMAGE_URI}"
+
+docker buildx build \
+  --platform linux/amd64 \
+  --provenance=false \
+  --sbom=false \
+  --output type=docker \
+  -t "${IMAGE_URI}" \
+  .
 
 echo "Pushing image..."
 docker push "${IMAGE_URI}"

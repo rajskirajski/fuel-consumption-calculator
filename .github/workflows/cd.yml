@@ -35,31 +35,41 @@ jobs:
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Define image variables
         run: |
           echo "IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${GITHUB_SHA}" >> "$GITHUB_ENV"
           echo "IMAGE_URI_LATEST=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:latest" >> "$GITHUB_ENV"
 
-      - name: Build Docker image
+      - name: Build and push Lambda-compatible Docker image
         run: |
-          docker build             -t "$IMAGE_URI"             -t "$IMAGE_URI_LATEST"             .
-
-      - name: Push Docker image
-        run: |
-          docker push "$IMAGE_URI"
-          docker push "$IMAGE_URI_LATEST"
+          docker buildx build \
+            --platform linux/amd64 \
+            --provenance=false \
+            --sbom=false \
+            --push \
+            -t "$IMAGE_URI" \
+            -t "$IMAGE_URI_LATEST" \
+            .
 
       - name: Update Lambda function code
         run: |
-          aws lambda update-function-code             --function-name "$LAMBDA_FUNCTION_NAME"             --image-uri "$IMAGE_URI"
+          aws lambda update-function-code \
+            --function-name "$LAMBDA_FUNCTION_NAME" \
+            --image-uri "$IMAGE_URI"
 
       - name: Wait for Lambda update
         run: |
-          aws lambda wait function-updated             --function-name "$LAMBDA_FUNCTION_NAME"
+          aws lambda wait function-updated \
+            --function-name "$LAMBDA_FUNCTION_NAME"
 
       - name: Smoke test API
         run: |
-          API_ENDPOINT=$(aws apigatewayv2 get-apis             --query "Items[?Name=='fuel-consumption-calculator-api'].ApiEndpoint | [0]"             --output text)
+          API_ENDPOINT=$(aws apigatewayv2 get-apis \
+            --query "Items[?Name=='fuel-consumption-calculator-api'].ApiEndpoint | [0]" \
+            --output text)
 
           echo "API endpoint: $API_ENDPOINT"
 
