@@ -5,7 +5,7 @@ github_owner      = "rajskirajski"
 github_repository = "fuel-consumption-calculator"
 
 # First apply:
-# enable_app_stack = false
+# enable_app_stack = true
 #
 # After pushing bootstrap image:
 # enable_app_stack = true

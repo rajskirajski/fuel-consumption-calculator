@@ -1,36 +1,42 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
 .Python
 .venv/
 venv/
 env/
-
-.env
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
-
 build/
 dist/
 *.egg-info/
 
-.terraform/
-.terraform.lock.hcl
-terraform.tfstate
-terraform.tfstate.backup
+# Environment variables
+.env
+.env.*
+!.env.example
 
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
 *.tfvars
 !*.tfvars.example
 
-.DS_Store
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Windows
+*:Zone.Identifier
 Thumbs.db
 
-# Terraform variable files
-*.tfvars
-!*.tfvars.example
-=======
-# Windows downloaded-file metadata
-*:Zone.Identifier
-
+# macOS
+.DS_Store
