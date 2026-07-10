@@ -23,7 +23,7 @@ locals {
   )))
 
   bootstrap_ecr_registry = "${data.aws_caller_identity.bootstrap.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com"
-  bootstrap_image_uri     = "${module.ecr.repository_url}:bootstrap"
+  bootstrap_image_uri    = "${module.ecr.repository_url}:bootstrap"
 }
 
 resource "terraform_data" "bootstrap_image" {

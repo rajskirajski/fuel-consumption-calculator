@@ -21,8 +21,16 @@ dist/
 terraform.tfstate
 terraform.tfstate.backup
 
+*.tfvars
+!*.tfvars.example
+
 .DS_Store
 Thumbs.db
+
 # Terraform variable files
 *.tfvars
 !*.tfvars.example
+=======
+# Windows downloaded-file metadata
+*:Zone.Identifier
+

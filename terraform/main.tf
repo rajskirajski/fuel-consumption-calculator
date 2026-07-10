@@ -45,19 +45,22 @@ module "cloudwatch" {
 
 module "lambda" {
   source = "./modules/lambda"
-
-  count = var.enable_app_stack ? 1 : 0
+  count  = var.enable_app_stack ? 1 : 0
 
   project_name    = var.project_name
   image_uri       = local.image_uri
   lambda_role_arn = module.iam.lambda_role_arn
-  memory_size     = var.lambda_memory_size
-  timeout         = var.lambda_timeout
-  environment     = "production"
-  tags            = local.common_tags
+
+  memory_size = var.lambda_memory_size
+  timeout     = var.lambda_timeout
+  environment = "production"
+
+  tags = local.common_tags
 
   depends_on = [
-    module.cloudwatch
+    terraform_data.bootstrap_image,
+    module.iam,
+    module.cloudwatch,
   ]
 }
 

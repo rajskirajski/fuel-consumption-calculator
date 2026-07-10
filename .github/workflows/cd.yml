@@ -36,13 +36,13 @@ jobs:
         run: |
           docker buildx build --platform linux/amd64 --provenance=false --sbom=false --output type=docker -t "$IMAGE_URI" -t "$IMAGE_URI_LATEST" .
       - name: Scan Docker image with Trivy
-        uses: aquasecurity/trivy-action@master
-        continue-on-error: true
+        uses: aquasecurity/trivy-action@0.33.1
         with:
-          image-ref: ${{ env.IMAGE_URI }}
+          image-ref: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           format: "table"
-          vuln-type: "os,library"
+          exit-code: 1
           severity: "CRITICAL,HIGH"
+          ignore-unfixed: true
       - name: Push Docker image
         run: |
           docker push "$IMAGE_URI"
