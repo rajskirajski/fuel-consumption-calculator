@@ -36,7 +36,7 @@ jobs:
         run: |
           docker buildx build --platform linux/amd64 --provenance=false --sbom=false --output type=docker -t "$IMAGE_URI" -t "$IMAGE_URI_LATEST" .
       - name: Scan Docker image with Trivy
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@master
         continue-on-error: true
         with:
           image-ref: ${{ env.IMAGE_URI }}
