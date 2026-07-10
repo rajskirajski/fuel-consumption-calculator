@@ -23,3 +23,6 @@ terraform.tfstate.backup
 
 .DS_Store
 Thumbs.db
+# Terraform variable files
+*.tfvars
+!*.tfvars.example
