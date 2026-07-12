@@ -4,11 +4,5 @@ aws_account_id    = "207909166461"
 github_owner      = "rajskirajski"
 github_repository = "fuel-consumption-calculator"
 
-# First apply:
-# enable_app_stack = true
-#
-# After pushing bootstrap image:
-# enable_app_stack = true
 enable_app_stack = false
-
 image_tag = "bootstrap"
