@@ -2,7 +2,7 @@
 
 Configure manually in GitHub:
 
-Repository -> Settings -> Branches -> Add branch protection rule
+Repository → Settings → Rules → Rulesets
 
 Recommended:
 - Branch pattern: main
