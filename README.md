@@ -43,11 +43,11 @@ flowchart LR
     Build --> Trivy[Trivy scan]
     Trivy --> ECR[Amazon ECR]
     ECR --> Lambda[AWS Lambda]
-    Lambda --> APIGW[API Gateway HTTP API]
+    APIGW[API Gateway HTTP API] --> Lambda
     Lambda --> Logs[CloudWatch Logs]
 
     Client[API client] --> APIGW
-```
+   ```
 
 ### Initial deployment bootstrap
 
