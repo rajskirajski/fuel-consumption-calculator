@@ -23,7 +23,7 @@ locals {
   )))
 
   bootstrap_ecr_registry = "${data.aws_caller_identity.bootstrap.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com"
-  bootstrap_image_uri    = "${module.ecr.repository_url}:bootstrap"
+  bootstrap_image_uri    = "${module.ecr.repository_url}:${var.image_tag}"
 }
 
 resource "terraform_data" "bootstrap_image" {
@@ -66,7 +66,7 @@ resource "terraform_data" "bootstrap_image" {
       aws ecr describe-images \
         --region "${var.aws_region}" \
         --repository-name "${var.project_name}" \
-        --image-ids imageTag=bootstrap \
+        --image-ids imageTag="${var.image_tag}" \
         >/dev/null
 
       echo "Obraz bootstrap jest dostępny: ${local.bootstrap_image_uri}"

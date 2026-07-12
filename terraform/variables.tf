@@ -35,7 +35,7 @@ variable "image_tag" {
 }
 
 variable "enable_app_stack" {
-  description = "Create Lambda and API Gateway. Set false for first bootstrap apply."
+  description = "Create the Lambda, CloudWatch and API Gateway application stack."
   type        = bool
   default     = false
 }
