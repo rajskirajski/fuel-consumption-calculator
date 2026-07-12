@@ -4,5 +4,5 @@ aws_account_id    = "207909166461"
 github_owner      = "rajskirajski"
 github_repository = "fuel-consumption-calculator"
 
-enable_app_stack = false
+enable_app_stack = true
 image_tag = "bootstrap"
