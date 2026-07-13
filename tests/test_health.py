@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app.config import APP_NAME, APP_VERSION
+from app.config import settings
 from app.main import app
 
 client = TestClient(app)
@@ -17,5 +17,10 @@ def test_version() -> None:
     response = client.get("/version")
 
     assert response.status_code == 200
-    assert response.json()["app_name"] == APP_NAME
-    assert response.json()["version"] == APP_VERSION   
+
+    data = response.json()
+    
+    assert data["app_name"] == settings.app_name
+    assert data["version"] == settings.version
+    assert data["environment"] == settings.environment
+   
