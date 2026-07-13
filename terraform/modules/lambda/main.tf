@@ -11,8 +11,7 @@ resource "aws_lambda_function" "this" {
     variables = {
       ENVIRONMENT = var.environment
       APP_NAME    = "Fuel Consumption Calculator"
-      VERSION     = "1.0.0"
-    }
+         }
   }
 
   lifecycle {
