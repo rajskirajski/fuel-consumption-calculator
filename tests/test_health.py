@@ -19,8 +19,7 @@ def test_version() -> None:
     assert response.status_code == 200
 
     data = response.json()
-    
+
     assert data["app_name"] == settings.app_name
     assert data["version"] == settings.version
     assert data["environment"] == settings.environment
-   
