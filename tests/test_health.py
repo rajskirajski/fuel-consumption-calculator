@@ -16,5 +16,5 @@ def test_version() -> None:
     response = client.get("/version")
 
     assert response.status_code == 200
-    assert response.json()["app_name"] == "Fuel Consumption Calculator"
-    assert response.json()["version"] == "1.0.0"
+    assert response.json()["app_name"] == APP_NAME
+    assert response.json()["version"] == APP_VERSION   
